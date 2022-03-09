@@ -6,10 +6,14 @@ from time import sleep
 from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import warnings
+import numpy as np
+import os
 warnings.filterwarnings('ignore')
 
 
 link = 'https://www.windguru.cz/49328'
+
+#link = ''
 
 
 class Scraper(object):
@@ -20,7 +24,7 @@ class Scraper(object):
         options.add_argument('--headless')
         options.add_argument('window-size=1120x550')
         self.driver = webdriver.Chrome(
-            executable_path=r'/usr/bin/chromedriver/chromedriver', chrome_options=options)
+            executable_path=r'/usr/bin/chromedriver', chrome_options=options)
 
     def page_is_loaded(self):
         x = self.driver.execute_script("return document.readyState")
@@ -37,16 +41,15 @@ class Scraper(object):
         sleep(10)
         while self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
-            
+
             table = s.find("table", class_="tabulka")
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
-            
+
             for row in rows:
                 cells = row.find_all("td")
                 id = row['id']
                 i = 0
-                
                 if id in ['tabid_0_0_SMER', 'tabid_0_0_dates', 'tabid_0_0_HTSGW']:
                     forecast[id] = []
                     for cell in cells:
@@ -56,24 +59,39 @@ class Scraper(object):
                             value = cell.get_text()
                         forecast[id].append(value)
                         i = i + 1
-            
-            text_file = open("forecast.json", "w")
-            text_to_write = str(forecast).replace("\'", "\"")
-            text_file.write(text_to_write)
-            text_file.close()
-            
-            df = pd.read_json('forecast.json',orient='records')
-            print(df)
-            
+
             self.driver.quit()
             return forecast
+
+    # meterlo en otro metodo, convertir a json
+
+    def forecast_to_json(self, forecast):
+        text_file = open("forecast.json", "w")
+        text_to_write = str(forecast).replace("\'", "\"")
+        text_file.write(text_to_write)
+        text_file.close()
+
+    # convertir a dataframe, otro metodo
+    def jsonfc_to_df(self):
+        df = pd.read_json('forecast.json', orient='records')
+
+        # Condiciones
+        df['playa'] = np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('NW')), 'Arrieta, Punta Mujeres',
+                               np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('NE')), 'Papagayo, Faro Pechiguera',
+                                        np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('S')), 'Caleta Caballo, Famara',
+                                                 np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('E')), 'La Santa',
+                                                          np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('W')), 'Playa Honda, Costa Teguise, Arrecife',
+                                                                   np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SE')), 'Caleta Caballo, Famara, La Santa',
+                                                                            np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SW')), 'Caleta Caballo, Famara', 'Norte puro')))))))
+        return df
 
 
 if __name__ == '__main__':
     scraper = Scraper()
-    scraper.scrape()
-
-
+    forecast = scraper.scrape()
+    scraper.forecast_to_json(forecast)
+    df = scraper.jsonfc_to_df()
+    print(df)
 
 
 # export PATH="/usr/bin/chromedriver:$PATH"
@@ -84,5 +102,16 @@ tabid_0_0_dates -> fechas
 htsgw -> tamaño ola
 
 playa
+NNE  SUR
+NNO NORTE
+N = ?
+S Caleta caballo, famara
+SE caleta caballo, famara, La santa
+SO Caleta caballo, famara
+E La santa
+W Playa honda, costa teguise, arrecife, matagorda
+
+
+Poner subida y bajada de la marea
 
 '''
