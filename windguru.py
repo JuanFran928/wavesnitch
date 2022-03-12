@@ -13,9 +13,6 @@ warnings.filterwarnings('ignore')
 
 link = 'https://www.windguru.cz/49328'
 
-#link = ''
-
-
 class Scraper(object):
     def __init__(self):
         #self.driver = webdriver.PhantomJS('./phantomjs')
@@ -74,16 +71,29 @@ class Scraper(object):
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
         df = pd.read_json('forecast.json', orient='records')
+        
+        
 
         # Condiciones
         df['playa'] = np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('NW')), 'Arrieta, Punta Mujeres',
                                np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('NE')), 'Papagayo, Faro Pechiguera',
                                         np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('S')), 'Caleta Caballo, Famara',
                                                  np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('E')), 'La Santa',
-                                                          np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('W')), 'Playa Honda, Costa Teguise, Arrecife',
+                                                          np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('W')), 'Playa Honda, Costa Teguise, Fariones',
                                                                    np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SE')), 'Caleta Caballo, Famara, La Santa',
                                                                             np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SW')), 'Caleta Caballo, Famara', 'Norte puro')))))))
+        #df['tabid_0_0_dates'] = df['tabid_0_0_dates'].str.split('.', 1)
         return df
+
+    def df_to_txt(self, df):
+        os.remove('prueba.txt')
+        with open('prueba.txt', 'a') as f:
+            dfAsString = df.to_string(header=False, index=False)
+            f.write(dfAsString)
+
+    def df_to_excel(self, df):
+        excel = ''
+        return excel
 
 
 if __name__ == '__main__':
@@ -91,7 +101,7 @@ if __name__ == '__main__':
     forecast = scraper.scrape()
     scraper.forecast_to_json(forecast)
     df = scraper.jsonfc_to_df()
-    print(df)
+    scraper.df_to_txt(df)
 
 
 # export PATH="/usr/bin/chromedriver:$PATH"
@@ -111,7 +121,8 @@ SO Caleta caballo, famara
 E La santa
 W Playa honda, costa teguise, arrecife, matagorda
 
+separar dia y hora en columnas
+separar grados y sentido en columnas
 
-Poner subida y bajada de la marea
-
+Poner subida y bajada de la marea, hacer otro script para ello, generar dataframe y luego combinarlos 
 '''
