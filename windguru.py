@@ -103,26 +103,3 @@ if __name__ == '__main__':
     df = scraper.jsonfc_to_df()
     scraper.df_to_txt(df)
 
-
-# export PATH="/usr/bin/chromedriver:$PATH"
-
-'''
-smer -> direccion viento
-tabid_0_0_dates -> fechas
-htsgw -> tamaño ola
-
-playa
-NNE  SUR
-NNO NORTE
-N = ?
-S Caleta caballo, famara
-SE caleta caballo, famara, La santa
-SO Caleta caballo, famara
-E La santa
-W Playa honda, costa teguise, arrecife, matagorda
-
-separar dia y hora en columnas
-separar grados y sentido en columnas
-
-Poner subida y bajada de la marea, hacer otro script para ello, generar dataframe y luego combinarlos 
-'''
