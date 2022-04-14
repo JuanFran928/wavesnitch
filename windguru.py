@@ -10,12 +10,12 @@ import numpy as np
 import os
 warnings.filterwarnings('ignore')
 
-
+#Prueba rebase
+#Prueba rebase
 link = 'https://www.windguru.cz/49328'
 
 class Scraper(object):
     def __init__(self):
-        #self.driver = webdriver.PhantomJS('./phantomjs')
         options = Options()
 
         options.add_argument('--headless')
@@ -50,7 +50,7 @@ class Scraper(object):
                 if id in ['tabid_0_0_SMER', 'tabid_0_0_dates', 'tabid_0_0_HTSGW']:
                     forecast[id] = []
                     for cell in cells:
-                        if ('SMER' in id):  # or ('DIRPW' in id):
+                        if ('SMER' in id): 
                             value = cell.find('span')['title']
                         else:
                             value = cell.get_text()
@@ -82,7 +82,6 @@ class Scraper(object):
                                                           np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 1) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('W')), 'Playa Honda, Costa Teguise, Fariones',
                                                                    np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SE')), 'Caleta Caballo, Famara, La Santa',
                                                                             np.where((df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.len() == 3) & (df['tabid_0_0_SMER'].str.split(' ', 1).str[0].str.contains('SW')), 'Caleta Caballo, Famara', 'Norte puro')))))))
-        #df['tabid_0_0_dates'] = df['tabid_0_0_dates'].str.split('.', 1)
         return df
 
     def df_to_txt(self, df):
