@@ -83,29 +83,73 @@ class Scraper(object):
         return df
 
     def conditions(self, df):
-        wind = df["tabid_0_0_SMER"].str.split(" ", 1).str[0].str
+        wind_direction = df["tabid_0_0_SMER"].str.split(" ", 1).str[0].str
+        sea_direction = df["tabid_0_0_DIRPW"].str.split(" ", 1).str[0].str
 
-        m1 = (wind.len() == 3) & (wind.contains("NW"))
-        m2 = (wind.len() == 3) & (wind.contains("NE"))
-        m3 = (wind.len() == 1) & (wind.contains("S"))
-        m4 = (wind.len() == 1) & (wind.contains("E"))
-        m5 = (wind.len() == 1) & (wind.contains("W"))
-        m6 = (wind.len() == 3) & (wind.contains("SE"))
-        m7 = (wind.len() == 3) & (wind.contains("SW"))
-
-        vals = [
-            "Arrieta, Punta Mujeres",
-            "Papagayo, Faro Pechiguera",
-            "Caleta Caballo, Famara",
-            "La Santa",
-            "Playa Honda, Costa Teguise, Fariones",
-            "Caleta Caballo, Famara, La Santa",
-            "Caleta Caballo, Famara, Norte puro",
-        ]
+        arrieta_punta = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("NW"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("SE"))
+        )
+        papagayo_pechiguera = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("NE") & sea_direction.len() == 3)
+            & (sea_direction.contains("SW"))
+        )
+        caballo_famara = (wind_direction.len() == 1) & (
+            wind_direction.contains("S")
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("N"))
+        )
+        lasanta = (
+            (wind_direction.len() == 1)
+            & (wind_direction.contains("E"))
+            & (sea_direction.len() == 1)
+            & (sea_direction.contains("W"))
+        )
+        ph_fariones_costa = (
+            (wind_direction.len() == 1)
+            & (wind_direction.contains("W"))
+            & (sea_direction.len() == 1)
+            & (sea_direction.contains("E"))
+        )
+        caballo_famara_santa = (wind_direction.len() == 3) & (
+            wind_direction.contains("SE")
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("NW"))
+        )
+        caballo_famara_norte = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("SW") & sea_direction.len() == 3)
+            & (sea_direction.contains("NE"))
+        )
 
         default = "nothing"
 
-        df["playas"] = np.select([m1, m2, m3, m4, m5, m6, m7], vals, default=default)
+        beaches = [
+            "Arrieta, Punta Mujeres",
+            "Papagayo, Faro Pechiguera",
+            "Izquierda Caleta Caballo, Famara",
+            "Izquierda La Santa",
+            "Playa Honda, Fariones, Costa Teguise",
+            "Derecha Caleta Caballo, Famara, La Santa",
+            "Izquierda Caleta Caballo, Famara, La Santa",
+        ]
+
+        df["playas"] = np.select(
+            [
+                arrieta_punta,
+                papagayo_pechiguera,
+                caballo_famara,
+                lasanta,
+                ph_fariones_costa,
+                caballo_famara_santa,
+                caballo_famara_norte,
+            ],
+            beaches,
+            default=default,
+        )
         return df
 
         # Condiciones #https://www.surfmarket.org/es/olas/europa/canarias/lanzarote/
