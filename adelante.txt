@@ -1,0 +1,47 @@
+        """
+        derecha_caleta = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("SE"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("NW"))
+        ) | (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("E"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("W"))
+        )
+        izquierda_caleta = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("S"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("N"))
+        ) | (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("SW"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("NE"))
+        )
+        corrales = ()
+        izquierda_lasanta = (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("SE"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("NW"))
+        ) | (
+            (wind_direction.len() == 3)
+            & (wind_direction.contains("E"))
+            & (sea_direction.len() == 3)
+            & (sea_direction.contains("W"))
+        )
+        
+        papelillo = ()
+        muelle_famara = ()
+        san_juan = ()
+        el_espino = ()
+        el_cartel = ()
+        jameos = ()
+        papagayo = ()
+        faro_pechiguera = ()
+        fariones = ()
+        aeropuerto = ()
+        costa_teguise = ()"""
