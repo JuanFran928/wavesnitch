@@ -5,16 +5,22 @@ from time import sleep
 
 link = 'https://tablademareas.com/es/islas-canarias/arrecife-lanzarote'
 
+#coger forecast y obtener la tabla de mareas
+#luego hacerle un append al forecast
+
+#hacer un main.py que hace estas tareas.
+
 
 class Scraper(object):
     def __init__(self):
-        #self.driver = webdriver.PhantomJS('./phantomjs')
+        # self.driver = webdriver.PhantomJS('./phantomjs')
         options = Options()
 
-        options.add_argument('--headless')
-        options.add_argument('window-size=1120x550')
+        options.add_argument("--headless")
+        options.add_argument("window-size=1120x550")
         self.driver = webdriver.Chrome(
-            executable_path=r'/usr/bin/chromedriver', chrome_options=options)
+            executable_path=r"/usr/bin/chromedriver", options=options
+        )
 
     def page_is_loaded(self):
         x = self.driver.execute_script("return document.readyState")
@@ -24,7 +30,7 @@ class Scraper(object):
             return False
 
     def scrape(self):
-        print('Loading...')
+        print("Loading...")
         self.driver.get(link)
 
         forecast = {}
@@ -32,7 +38,9 @@ class Scraper(object):
         while self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
 
-            table = s.find("table", class_="tabulka")
+            table = s.find("table", id_="tabla_mareas")
+            print(table)
+            '''
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
 
@@ -50,5 +58,13 @@ class Scraper(object):
                         forecast[id].append(value)
                         i = i + 1
 
-            self.driver.quit()
-            return forecast
+            self.driver.quit()'''
+            return table
+        
+if __name__ == '__main__':
+    scraper = Scraper()
+    forecast = scraper.scrape()
+    print(forecast)
+    #scraper.forecast_to_json(forecast)
+    #df = scraper.jsonfc_to_df()
+    #scraper.df_to_txt(df)
