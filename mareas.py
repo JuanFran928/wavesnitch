@@ -38,33 +38,31 @@ class Scraper(object):
         while self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
 
-            table = s.find("table", id_="tabla_mareas")
-            print(table)
-            '''
+            table = s.find("table", id="tabla_mareas")
+            
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
-
+            
+            
+            
             for row in rows:
+                
                 cells = row.find_all("td")
-                id = row['id']
-                i = 0
-                if id in ['tabid_0_0_SMER', 'tabid_0_0_dates', 'tabid_0_0_HTSGW']:
-                    forecast[id] = []
-                    for cell in cells:
-                        if ('SMER' in id):  # or ('DIRPW' in id):
-                            value = cell.find('span')['title']
-                        else:
-                            value = cell.get_text()
-                        forecast[id].append(value)
-                        i = i + 1
+                #print(cells)
+                
+                for cell in cells:
+                    if cell.find("div",  {"class": ["tabla_mareas_marea_hora"]}):
+                        print(cell.find("div",  {"class": ["tabla_mareas_marea_hora"]}).text)
+                    #if cell.find("div",  {"class": ["tabla_mareas_marea_hora ", "tabla_mareas_hora_bajamar"]}):
+                    #    print(cell.find("div",  {"class": ["tabla_mareas_marea_hora ", "tabla_mareas_hora_bajamar"]}).text)
 
-            self.driver.quit()'''
+            self.driver.quit()
             return table
         
 if __name__ == '__main__':
     scraper = Scraper()
     forecast = scraper.scrape()
-    print(forecast)
+    #print(forecast)
     #scraper.forecast_to_json(forecast)
     #df = scraper.jsonfc_to_df()
     #scraper.df_to_txt(df)
