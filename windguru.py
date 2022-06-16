@@ -81,10 +81,9 @@ class Scraper(object):
     # meterlo en otro metodo, convertir a json
 
     def forecast_to_json(self, forecast):
-        text_file = open("forecast.json", "w")
-        text_to_write = str(forecast).replace("'", '"')
-        text_file.write(text_to_write)
-        text_file.close()
+        with open("forecast.json", "w") as text_file: # with open
+            text_to_write = str(forecast).replace("'", '"')
+            text_file.write(text_to_write)
 
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
@@ -210,7 +209,7 @@ class Scraper(object):
         with open("prueba.txt", "a") as f:
             dfAsString = df.to_string(header=False, index=False)
             f.write(dfAsString)
-
+            
     def df_to_excel(self, df):
         excel = ""
         return excel
