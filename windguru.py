@@ -12,7 +12,17 @@ import os
 warnings.filterwarnings("ignore")
 
 
-link = "https://www.windguru.cz/49328"
+link = "https://www.windguru.cz/49328"  # meterle varios links de las distintas playas, para ser más preciso
+
+links = {
+    "famara": "https://www.windguru.cz/49328",
+    "santa": "https://www.windguru.cz/45391",
+    "garita": "https://www.windguru.cz/49325",
+    "jameos": "https://www.windguru.cz/49326",
+    "playa_blanca": "https://www.windguru.cz/49319",
+    "costa": "https://www.windguru.cz/49323",
+    "playa_honda": "https://www.windguru.cz/49322",
+}
 
 
 class Scraper(object):
@@ -71,10 +81,9 @@ class Scraper(object):
     # meterlo en otro metodo, convertir a json
 
     def forecast_to_json(self, forecast):
-        text_file = open("forecast.json", "w")
-        text_to_write = str(forecast).replace("'", '"')
-        text_file.write(text_to_write)
-        text_file.close()
+        with open("forecast.json", "w") as text_file: # with open
+            text_to_write = str(forecast).replace("'", '"')
+            text_file.write(text_to_write)
 
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
@@ -86,65 +95,105 @@ class Scraper(object):
         wind_direction = df["tabid_0_0_SMER"].str.split(" ", 1).str[0].str
         sea_direction = df["tabid_0_0_DIRPW"].str.split(" ", 1).str[0].str
 
-        arrieta_punta = (
+        arrieta_punta_crema = (
             (wind_direction.len() == 3)
             & (wind_direction.contains("NW"))
             & (sea_direction.len() == 3)
             & (sea_direction.contains("SE"))
         )
-        papagayo_pechiguera = (
+
+        arrieta_punta = (wind_direction.len() == 3) & (wind_direction.contains("NW"))
+
+        papagayo_pechiguera_crema = (
             (wind_direction.len() == 3)
             & (wind_direction.contains("NE") & sea_direction.len() == 3)
             & (sea_direction.contains("SW"))
         )
-        caballo_famara = (wind_direction.len() == 1) & (
+
+        papagayo_pechiguera = (wind_direction.len() == 3) & (
+            wind_direction.contains("NE")
+        )
+
+        caballo_famara_crema = (wind_direction.len() == 1) & (
             wind_direction.contains("S")
-            & (sea_direction.len() == 3)
+            & (sea_direction.len() == 1)
             & (sea_direction.contains("N"))
         )
-        lasanta = (
+
+        caballo_famara = (wind_direction.len() == 1) & (wind_direction.contains("S"))
+
+        lasanta_crema = (
             (wind_direction.len() == 1)
             & (wind_direction.contains("E"))
             & (sea_direction.len() == 1)
             & (sea_direction.contains("W"))
         )
-        ph_fariones_costa = (
+
+        lasanta = (wind_direction.len() == 1) & (wind_direction.contains("E"))
+
+        ph_fariones_costa_crema = (
             (wind_direction.len() == 1)
             & (wind_direction.contains("W"))
             & (sea_direction.len() == 1)
             & (sea_direction.contains("E"))
         )
-        caballo_famara_santa = (wind_direction.len() == 3) & (
+
+        ph_fariones_costa = (wind_direction.len() == 1) & (wind_direction.contains("W"))
+
+        caballo_famara_santa_crema = (wind_direction.len() == 3) & (
             wind_direction.contains("SE")
             & (sea_direction.len() == 3)
             & (sea_direction.contains("NW"))
         )
-        caballo_famara_norte = (
+
+        caballo_famara_santa = (wind_direction.len() == 3) & (
+            wind_direction.contains("SE")
+        )
+
+        caballo_famara_norte_crema = (
             (wind_direction.len() == 3)
             & (wind_direction.contains("SW") & sea_direction.len() == 3)
             & (sea_direction.contains("NE"))
         )
 
+        caballo_famara_norte = (wind_direction.len() == 3) & (
+            wind_direction.contains("SW")
+        )
+
         default = "nothing"
 
         beaches = [
+            "Arrieta, Punta Mujeres Cremisima",
             "Arrieta, Punta Mujeres",
+            "Papagayo, Faro Pechiguera Cremisima",
             "Papagayo, Faro Pechiguera",
+            "Izquierda Caleta Caballo, Famara Cremisima",
             "Izquierda Caleta Caballo, Famara",
+            "Izquierda La Santa Cremisima",
             "Izquierda La Santa",
+            "Playa Honda, Fariones, Costa Teguise Cremisima",
             "Playa Honda, Fariones, Costa Teguise",
+            "Derecha Caleta Caballo, Famara, La Santa Cremisima",
             "Derecha Caleta Caballo, Famara, La Santa",
+            "Izquierda Caleta Caballo, Famara, La Santa Cremisima",
             "Izquierda Caleta Caballo, Famara, La Santa",
         ]
 
         df["playas"] = np.select(
             [
+                arrieta_punta_crema,
                 arrieta_punta,
+                papagayo_pechiguera_crema,
                 papagayo_pechiguera,
+                caballo_famara_crema,
                 caballo_famara,
+                lasanta_crema,
                 lasanta,
+                ph_fariones_costa_crema,
                 ph_fariones_costa,
+                caballo_famara_santa_crema,
                 caballo_famara_santa,
+                caballo_famara_norte_crema,
                 caballo_famara_norte,
             ],
             beaches,
@@ -160,7 +209,7 @@ class Scraper(object):
         with open("prueba.txt", "a") as f:
             dfAsString = df.to_string(header=False, index=False)
             f.write(dfAsString)
-
+            
     def df_to_excel(self, df):
         excel = ""
         return excel
