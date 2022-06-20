@@ -5,13 +5,14 @@ from time import sleep
 import pandas as pd
 import os
 
-link = "https://tablademareas.com/es/islas-canarias/arrecife-lanzarote"
+from datetime import timedelta
+
+link = "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
 
 # coger forecast y obtener la tabla de mareas
 # luego hacerle un append al forecast
 
 # hacer un main.py que hace estas tareas.
-# coger solo el dia de hoy, poner los mismos dias que en windguru.py
 
 
 class Scraper(object):
@@ -39,64 +40,27 @@ class Scraper(object):
         sleep(10)
         while self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
+            tables = s.find_all("table", class_="table table-bordered")
+            horas = ""
+            for table in tables:
+                tablebody = table.find("tbody")
+                rows = tablebody.find_all("tr")
+                for row in rows:
+                    cells = row.find_all("td")
+                    for cell in cells:
+                        if cell.text == "pleamar" or cell.text == "bajamar":
+                            horas = horas + str(cell.text) + " "
+                        elif ":" in cell.text:
+                            horas = horas + str(cell.text) + "hx"
+                horas = horas + "-"
+            horas = horas.split("-")
+            horas = [hora for hora in horas if hora]
+            horas = [hora.split("x") for hora in horas]
+            horas = [list(filter(None, hora)) for hora in horas]
 
-            table = s.find("table", id="tabla_mareas")
-
-            tablebody = table.find("tbody")
-            rows = tablebody.find_all("tr")
-
-            tabla_mareas_marea = []
-            tabla_mareas_dia = []
-
-            for row in rows:
-
-                cells = row.find_all("td")
-
-                for cell in cells:
-
-                    if (
-                        cell.has_attr("class")
-                        and cell["class"][0] == "tabla_mareas_marea"
-                    ) or (
-                        cell.has_attr("class")
-                        and cell["class"][0] == "tabla_mareas_dia"
-                    ):
-                        classHtml = cell["class"][0]
-                        if cell.find("div", {"class": ["tabla_mareas_marea_hora"]}):
-                            valueHora = (
-                                cell.find("div", {"class": ["tabla_mareas_marea_hora"]})
-                                .text.replace("\n", "")
-                                .replace("\t", "")
-                            )
-                        elif cell.find("div", {"class": ["tabla_mareas_dia_numero"]}):
-                            dia = (
-                                cell.find("div", {"class": ["tabla_mareas_dia_dia"]})
-                                .text.replace("\n", "")
-                                .replace("\t", "")
-                            )
-                            numero_dia = (
-                                cell.find("div", {"class": ["tabla_mareas_dia_numero"]})
-                                .text.replace("\n", "")
-                                .replace("\t", "")
-                            )
-                            valueDia = dia + numero_dia
-
-                        if "tabla_mareas_dia" == classHtml:
-                            tabla_mareas_dia.append(valueDia)
-                        elif "tabla_mareas_marea" == classHtml:
-                            tabla_mareas_marea.append(valueHora)
-                    N = 4
-                    subList = [
-                        tabla_mareas_marea[n : n + N]
-                        for n in range(0, len(tabla_mareas_marea), N)
-                    ]
-            mareas = {}
-            for line in subList:
-                key, value = tabla_mareas_dia[subList.index(line)], line[0:]
-                mareas[key] = value
-
+            print(horas)
             self.driver.quit()
-            return mareas
+            return horas
 
         # meterlo en otro metodo, convertir a json
 
