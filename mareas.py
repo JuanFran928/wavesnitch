@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 import pandas as pd
-import os
+import os,json
 
 from datetime import timedelta
 
@@ -48,8 +48,10 @@ class Scraper(object):
                 for row in rows:
                     cells = row.find_all("td")
                     for cell in cells:
-                        if cell.text == "pleamar" or cell.text == "bajamar":
-                            horas = horas + str(cell.text) + " "
+                        if cell.text == "pleamar":
+                            horas = horas + "sub" + " "
+                        elif cell.text == "bajamar":
+                            horas = horas + "baj" + " "
                         elif ":" in cell.text:
                             horas = horas + str(cell.text) + "hx"
                 horas = horas + "-"
@@ -57,22 +59,33 @@ class Scraper(object):
             horas = [hora for hora in horas if hora]
             horas = [hora.split("x") for hora in horas]
             horas = [list(filter(None, hora)) for hora in horas]
+            
+            #n = 4
+            #fill = ["empty"] * n
+            #horas = [hora[:n] + fill[len(hora):] for hora in horas]
+            
+            horasDict = {}
+            
+            for hora in horas:
+                horasDict[horas.index(hora)] = hora #la key cambiarlo por el dia de hoy, irle sumando dias
+                
 
-            print(horas)
             self.driver.quit()
-            return horas
+            return horasDict
 
         # meterlo en otro metodo, convertir a json
 
     def forecast_to_json(self, forecast):
         text_file = open("forecast.json", "w")
-        text_to_write = str(forecast).replace("'", '"')
+        text_to_write=json.dumps(forecast)
+        #text_to_write = str(forecast).replace("'", '"')
         text_file.write(text_to_write)
         text_file.close()
 
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
-        df = pd.read_json("forecast.json", orient="records")
+        df = pd.read_json("forecast.json", orient="records", lines=True)
+        return df
 
     def df_to_txt(self, df):
         os.remove("prueba.txt")
@@ -84,7 +97,6 @@ class Scraper(object):
 if __name__ == "__main__":
     scraper = Scraper()
     forecast = scraper.scrape()
-    print(forecast)
     scraper.forecast_to_json(forecast)
     df = scraper.jsonfc_to_df()
     scraper.df_to_txt(df)
