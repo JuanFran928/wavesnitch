@@ -47,7 +47,6 @@ class Scraper(object):
                 rows = tablebody.find_all("tr")
                 for row in rows:
                     cells = row.find_all("td")
-                    
                     for cell in cells:
                         if cell.text == "pleamar" or cell.text=="bajamar":
                             horas = horas + cell.text.replace("amar","") + " "
@@ -58,11 +57,9 @@ class Scraper(object):
             horas = [hora for hora in horas if hora]
             horas = [hora.split("x") for hora in horas]
             horas = [list(filter(None, hora)) for hora in horas]
-            
+            print(horas)
             for hora in horas:
                 horasDict[self.get_day_name(horas.index(hora))] = hora
-                
-
             self.driver.quit()
             return horasDict
 
@@ -71,7 +68,6 @@ class Scraper(object):
     def mareas_to_json(self, mareas):
         text_file = open("mareas.json", "w")
         text_to_write=json.dumps(mareas)
-        #text_to_write = str(mareas).replace("'", '"')
         text_file.write(text_to_write)
         text_file.close()
 
@@ -81,7 +77,8 @@ class Scraper(object):
         return df
 
     def df_to_txt(self, df):
-        os.remove("mareas.txt")
+        if os.path.exists("mareas.txt"):
+            os.remove("mareas.txt")
         with open("mareas.txt", "a") as f:
             dfAsString = df.to_string(header=False, index=False)
             f.write(dfAsString)
