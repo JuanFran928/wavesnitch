@@ -49,7 +49,6 @@ class Scraper(object):
                 for row in rows:
                     cells = row.find_all("td")
                     for cell in cells:
-                        print(cell.text)
                         if cell.text == "pleamar" or cell.text == "bajamar":
                             hora.append(cell.text.replace("amar", ""))
                         elif ":" in cell.text:
@@ -57,32 +56,13 @@ class Scraper(object):
                             text_to_insert = f"{last_elem} {cell.text}h"
                             hora.insert(len(hora)-1, text_to_insert)
                 horas.append(hora)
+                for hora in horas:
+                     if len(hora) == 3:
+                         hora.append("None")
             for hora in horas:
                 horasDict[self.get_day_name(horas.index(hora))] = hora
             self.driver.quit()
             return horasDict
-        '''
-                    horas = ""
-            for table in tables:
-                tablebody = table.find("tbody")
-                rows = tablebody.find_all("tr")
-                for row in rows:
-                    cells = row.find_all("td")
-                    for cell in cells:
-                        if cell.text == "pleamar" or cell.text=="bajamar":
-                            horas = horas + cell.text.replace("amar","") + " "
-                        elif ":" in cell.text:
-                            horas = horas + cell.text + "hx"
-                horas = horas + "-"
-            horas = horas.split("-")
-            horas = [hora for hora in horas if hora]
-            horas = [hora.split("x") for hora in horas]
-            horas = [list(filter(None, hora)) for hora in horas]
-            for hora in horas:
-                horasDict[self.get_day_name(horas.index(hora))] = hora
-            self.driver.quit()
-            return horasDict
-        '''
 
         # meterlo en otro metodo, convertir a json
 
@@ -94,7 +74,7 @@ class Scraper(object):
 
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
-        df = pd.read_json("mareas.json", orient="rows", lines=True)
+        df = pd.read_json("mareas.json", orient="records")
         return df
 
     def df_to_txt(self, df):
