@@ -79,11 +79,7 @@ class Scraper(object):
         with open('mareas.json') as f:
             data = json.load(f)
             dayList = data.keys()
-            
             df['day'] = dayList
-        
-        
-        
         return df
 
     def df_to_txt(self, df):
