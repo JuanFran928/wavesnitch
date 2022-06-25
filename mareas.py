@@ -75,11 +75,15 @@ class Scraper(object):
     # convertir a dataframe, otro metodo
     def jsonfc_to_df(self):
         df = pd.read_json("mareas.json", orient="index")
+        #print(df.columns.values.tolist())
+        
+        df.columns = ['a', 'b', 'c', 'd']
         
         with open('mareas.json') as f:
             data = json.load(f)
             dayList = data.keys()
             df['day'] = dayList
+        df = df[['day', 'a', 'b', 'c', 'd']]
         return df
 
     def df_to_txt(self, df):
