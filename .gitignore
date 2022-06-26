@@ -3,3 +3,4 @@
 /forecast.json
 /forecast.txt
 venv/
+__pycache__/

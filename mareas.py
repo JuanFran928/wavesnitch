@@ -1,3 +1,4 @@
+from hashlib import new
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
@@ -14,7 +15,7 @@ link = "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
 # hacer un main.py que hace estas tareas.
 
 
-class Scraper(object):
+class TidesScraper(object):
 
     def __init__(self):
         # self.driver = webdriver.PhantomJS('./phantomjs')
@@ -33,7 +34,6 @@ class Scraper(object):
             return False
 
     def scrape(self):
-        print("Loading...")
         self.driver.get(link)
         horasDict = {}
 
@@ -52,9 +52,9 @@ class Scraper(object):
                         if cell.text == "pleamar" or cell.text == "bajamar":
                             hora.append(cell.text.replace("amar", ""))
                         elif ":" in cell.text:
-                            last_elem = hora.pop()
-                            text_to_insert = f"{last_elem} {cell.text}h"
-                            hora.insert(len(hora)-1, text_to_insert)
+                            ple_baj = hora.pop()
+                            text_to_insert = f"{ple_baj} {cell.text}h"
+                            hora.insert(len(hora), text_to_insert)
                 horas.append(hora)
                 for hora in horas:
                      if len(hora) == 3:
@@ -63,9 +63,12 @@ class Scraper(object):
                 horasDict[self.get_day_name(horas.index(hora))] = hora
             self.driver.quit()
             return horasDict
+    
+    def mareas_to_df(self, dict):
+        df = pd.DataFrame(dict)
+        return df
 
         # meterlo en otro metodo, convertir a json
-
     def mareas_to_json(self, mareas):
         text_file = open("mareas.json", "w")
         text_to_write = json.dumps(mareas)
@@ -93,17 +96,25 @@ class Scraper(object):
             "Thursday": "Th",
             "Friday": "Fr",
             "Saturday": "Sa",
-            "Sunday": "Sa",
+            "Sunday": "Su",
         }
         day_name = day_matches[day.strftime("%A")]
         day_number = day.strftime("%d")
-
-        return day_name + day_number
-
-
-if __name__ == "__main__":
-    scraper = Scraper()
-    mareas = scraper.scrape()
-    scraper.mareas_to_json(mareas)
-    df = scraper.jsonfc_to_df()
-    scraper.df_to_txt(df)
+        day_name_number = day_name + str(int(day_number))
+        
+        return day_name_number
+    
+    def remove_ple_baj(self, tides_hour_list):
+        returned_tides_hour_list = []
+        for tide_hour in tides_hour_list:
+            if tide_hour != 'None':
+                if "baj"in tide_hour:
+                    tide_hour = tide_hour.replace("baj ", "")
+                elif "ple" in tide_hour:
+                    tide_hour = tide_hour.replace("ple ", "")
+                returned_tides_hour_list.append(tide_hour)
+        return returned_tides_hour_list
+    
+    def format_hour(self, tides_hour_list):
+        formated_tides_hour_list = [element.replace('h', '') for element in tides_hour_list]
+        return formated_tides_hour_list
