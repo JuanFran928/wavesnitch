@@ -1,13 +1,10 @@
 #!/usr/bin/env python
-
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
 from selenium.webdriver.chrome.options import Options
-import pandas as pd
-import warnings
-import numpy as np
-import os
+import warnings, os, numpy as np, pandas as pd
+
 
 warnings.filterwarnings("ignore")
 
@@ -15,7 +12,7 @@ link = "https://www.windguru.cz/49328"  # meterle varios links de las distintas 
 
 links = {
     "famara": "https://www.windguru.cz/49328",
-    "santa": "https://www.windguru.cz/45391",
+    "santa": "https://www.windguru.cz/45391", 
     "garita": "https://www.windguru.cz/49325",
     "jameos": "https://www.windguru.cz/49326",
     "playa_blanca": "https://www.windguru.cz/49319",
@@ -24,7 +21,7 @@ links = {
 }
 
 
-class Scraper(object):
+class WindguruScraper(object):
 
     def __init__(self):
         # self.driver = webdriver.PhantomJS('./phantomjs')
@@ -43,7 +40,6 @@ class Scraper(object):
             return False
 
     def scrape(self):
-        print("Loading...")
         self.driver.get(link)
 
         forecast = {}
@@ -74,7 +70,15 @@ class Scraper(object):
                         forecast[id].append(value)
             self.driver.quit()
             return forecast
-
+    
+    def forecast_to_df(self, dict):
+        df = pd.DataFrame(dict)
+        df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.', 1, expand=True)
+        df = df.drop('tabid_0_0_dates', 1)
+        df = df[["day", "hour", "tabid_0_0_SMER", "tabid_0_0_DIRPW", "tabid_0_0_PERPW", "tabid_0_0_HTSGW"]]
+        return df
+        
+        
     # meterlo en otro metodo, convertir a json
 
     def forecast_to_json(self, forecast):
@@ -132,7 +136,7 @@ class Scraper(object):
         san_juan = (STRENGTH & PERIOD & ((N_SEA | NW_SEA) & SW_WIND))
         papagayo_pechiguera = (STRENGTH & PERIOD & (NE_WIND & NW_SEA))
 
-        default = "nothing"
+        default = "No hay olas"
 
         beaches = [
             "Arrieta, Punta, (Viento O Jameos, Viento NW Fariones)",
@@ -140,7 +144,7 @@ class Scraper(object):
             "Famara papelillo", "San Juan", "Papagayo, Faro, Castillo"
         ]
 
-        df["playa"] = np.select(
+        df["beach"] = np.select(
             [
                 arrieta_punta_jameos_fariones, caleta_caballo_san_juan,
                 la_santa_izquierda, famara, san_juan, papagayo_pechiguera
@@ -160,13 +164,9 @@ class Scraper(object):
     def df_to_excel(self, df):
         excel = ""
         return excel
+    def format_hour(self, windguru_df, day):
+        windguru_hour_list = (windguru_df['hour'].loc[windguru_df['day'] == day]).tolist()
+        formated_windguru_hour_list = [element.replace('h', ':00') for element in windguru_hour_list]
+        return formated_windguru_hour_list
 
 
-if __name__ == "__main__":
-    scraper = Scraper()
-    forecast = scraper.scrape()
-    scraper.forecast_to_json(forecast)
-    df = scraper.jsonfc_to_df()
-    df = scraper.conditions(df)
-
-    scraper.df_to_txt(df)
