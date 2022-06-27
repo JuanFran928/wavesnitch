@@ -3,7 +3,7 @@ from windguru import WindguruScraper
 import pandas as pd
 class CombinedTasks(object):
     
-    def combine_df(self, windguru_df, tides_df):
+    def combine_df(self, windguru_df: pd.DataFrame, tides_df: pd.DataFrame) -> pd.DataFrame:
         tides_scraper = TidesScraper()
         windguru_scraper = WindguruScraper()
         
