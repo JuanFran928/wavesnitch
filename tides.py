@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 import os, datetime, pandas as pd
+from typing import Dict, List
 
 link = "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
 
@@ -23,7 +24,7 @@ class TidesScraper(object):
         else:
             return False
 
-    def scrape(self):
+    def scrape(self) -> Dict:
         self.driver.get(link)
         horasDict = {}
 
@@ -51,21 +52,21 @@ class TidesScraper(object):
                         hora.append("None")
             for hora in horas:
                 horasDict[self.get_day_name(horas.index(hora))] = hora
-            self.driver.quit()
             return horasDict
+            self.driver.quit()
 
-    def mareas_to_df(self, dict):
+    def mareas_to_df(self, dict: Dict) -> pd.DataFrame:
         df = pd.DataFrame(dict)
         return df
 
-    def df_to_txt(self, df):
+    def df_to_txt(self, df: pd.DataFrame) -> None:
         if os.path.exists("mareas.txt"):
             os.remove("mareas.txt")
         with open("mareas.txt", "a") as f:
             dfAsString = df.to_string(header=True, index=False)
             f.write(dfAsString)
 
-    def get_day_name(self, add):
+    def get_day_name(self, add: float) -> str:
         day = datetime.date.today() + datetime.timedelta(days=add)
         day_matches = {
             "Monday": "Mo",
@@ -82,7 +83,7 @@ class TidesScraper(object):
 
         return day_name_number
 
-    def remove_ple_baj(self, tides_hour_list):
+    def remove_ple_baj(self, tides_hour_list: List) -> List:
         returned_tides_hour_list = []
         for tide_hour in tides_hour_list:
             if tide_hour != 'None':
@@ -93,7 +94,7 @@ class TidesScraper(object):
                 returned_tides_hour_list.append(tide_hour)
         return returned_tides_hour_list
 
-    def format_hour(self, tides_hour_list):
+    def format_hour(self, tides_hour_list: List) -> List:
         formated_tides_hour_list = [
             element.replace('h', '') for element in tides_hour_list
         ]

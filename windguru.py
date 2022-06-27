@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 from selenium.webdriver.chrome.options import Options
 import warnings, os, numpy as np, pandas as pd
+from typing import Dict, List
 
 warnings.filterwarnings("ignore")
 
@@ -35,7 +36,7 @@ class WindguruScraper(object):
         else:
             return False
 
-    def scrape(self):
+    def scrape(self) -> Dict:
         self.driver.get(link)
 
         forecast = {}
@@ -64,10 +65,11 @@ class WindguruScraper(object):
                         else:
                             value = cell.get_text()
                         forecast[id].append(value)
-            self.driver.quit()
             return forecast
+            self.driver.quit()
 
-    def forecast_to_df(self, dict):
+
+    def forecast_to_df(self, dict: Dict) -> pd.DataFrame:
         df = pd.DataFrame(dict)
         df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.',
                                                               1,
@@ -79,7 +81,7 @@ class WindguruScraper(object):
         ]]
         return df
 
-    def conditions(self, df):
+    def conditions(self, df: pd.DataFrame) -> pd.DataFrame:
         wind_direction = df["tabid_0_0_SMER"].str.split(" ", 1).str[0].str
         sea_direction = df["tabid_0_0_DIRPW"].str.split(" ", 1).str[0].str
         strength = df["tabid_0_0_HTSGW"].astype(float)
@@ -137,14 +139,14 @@ class WindguruScraper(object):
         )
         return df
 
-    def df_to_txt(self, df):
+    def df_to_txt(self, df: pd.DataFrame) -> None:
         if os.path.exists("forecast.txt"):
             os.remove("forecast.txt")
         with open("forecast.txt", "a") as f:
             dfAsString = df.to_string(header=True, index=False)
             f.write(dfAsString)
 
-    def format_hour(self, windguru_df, day):
+    def format_hour(self, windguru_df: pd.DataFrame, day: str) -> List:
         windguru_hour_list = (
             windguru_df['hour'].loc[windguru_df['day'] == day]).tolist()
         formated_windguru_hour_list = [
