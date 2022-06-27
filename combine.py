@@ -1,8 +1,6 @@
 from tides import TidesScraper 
 from windguru import WindguruScraper 
     
-    
-    
 class CombinedTasks(object):
     
     def combine_df(self, windguru_df, tides_df):

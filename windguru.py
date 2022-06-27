@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
@@ -11,7 +10,7 @@ link = "https://www.windguru.cz/49328"
 
 links = {
     "famara": "https://www.windguru.cz/49328",
-    "santa": "https://www.windguru.cz/45391",
+    "santa": "https://www.windguru.cz/45391", 
     "garita": "https://www.windguru.cz/49325",
     "jameos": "https://www.windguru.cz/49326",
     "playa_blanca": "https://www.windguru.cz/49319",

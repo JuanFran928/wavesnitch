@@ -1,11 +1,9 @@
-from hashlib import new
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
 from time import sleep
-import os, json, calendar, datetime, pandas as pd
+import os, datetime, pandas as pd
 
-from datetime import timedelta
 
 link = "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
 
@@ -56,6 +54,10 @@ class TidesScraper(object):
                 horasDict[self.get_day_name(horas.index(hora))] = hora
             self.driver.quit()
             return horasDict
+    
+    def mareas_to_df(self, dict):
+        df = pd.DataFrame(dict)
+        return df
 
     def mareas_to_df(self, dict):
         df = pd.DataFrame(dict)

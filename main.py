@@ -18,7 +18,6 @@ if __name__ == "__main__":
     windguru_df = windguru_scraper.conditions(windguru_df)
     print("Finished Windguru...")
     
-    
     combine = CombinedTasks()
     df = combine.combine_df(windguru_df, tides_df)
     
