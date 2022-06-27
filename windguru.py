@@ -1,14 +1,12 @@
-#!/usr/bin/env python
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
 from selenium.webdriver.chrome.options import Options
 import warnings, os, numpy as np, pandas as pd
 
-
 warnings.filterwarnings("ignore")
 
-link = "https://www.windguru.cz/49328"  # meterle varios links de las distintas playas, para ser más preciso
+link = "https://www.windguru.cz/49328"
 
 links = {
     "famara": "https://www.windguru.cz/49328",
@@ -24,9 +22,7 @@ links = {
 class WindguruScraper(object):
 
     def __init__(self):
-        # self.driver = webdriver.PhantomJS('./phantomjs')
         options = Options()
-
         options.add_argument("--headless")
         options.add_argument("window-size=1120x550")
         self.driver = webdriver.Chrome(
@@ -70,28 +66,17 @@ class WindguruScraper(object):
                         forecast[id].append(value)
             self.driver.quit()
             return forecast
-    
+
     def forecast_to_df(self, dict):
         df = pd.DataFrame(dict)
-        df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.', 1, expand=True)
+        df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.',
+                                                              1,
+                                                              expand=True)
         df = df.drop('tabid_0_0_dates', 1)
-        df = df[["day", "hour", "tabid_0_0_SMER", "tabid_0_0_DIRPW", "tabid_0_0_PERPW", "tabid_0_0_HTSGW"]]
-        return df
-        
-        
-    # meterlo en otro metodo, convertir a json
-
-    def forecast_to_json(self, forecast):
-        with open("forecast.json", "w") as text_file:  # with open
-            text_to_write = str(forecast).replace("'", '"')
-            text_file.write(text_to_write)
-
-    # convertir a dataframe, otro metodo
-    def jsonfc_to_df(self):
-        df = pd.read_json("forecast.json", orient="records")
-        df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.', 1, expand=True)
-        df = df.drop('tabid_0_0_dates', 1)
-        df = df[["day", "hour", "tabid_0_0_SMER", "tabid_0_0_DIRPW", "tabid_0_0_PERPW", "tabid_0_0_HTSGW"]]
+        df = df[[
+            "day", "hour", "tabid_0_0_SMER", "tabid_0_0_DIRPW",
+            "tabid_0_0_PERPW", "tabid_0_0_HTSGW"
+        ]]
         return df
 
     def conditions(self, df):
@@ -123,9 +108,7 @@ class WindguruScraper(object):
         STRENGTH = ((strength > 1) & (strength < 2))
 
         #PERIOD
-        PERIOD = (
-            period > 7
-        )  #fijarme en el periodo, más adelante ponerle uno más alto para mejores condiciones
+        PERIOD = (period > 7)
 
         arrieta_punta_jameos_fariones = (STRENGTH & PERIOD &
                                          (N_SEA & (W_WIND | NW_WIND)))
@@ -136,7 +119,7 @@ class WindguruScraper(object):
         san_juan = (STRENGTH & PERIOD & ((N_SEA | NW_SEA) & SW_WIND))
         papagayo_pechiguera = (STRENGTH & PERIOD & (NE_WIND & NW_SEA))
 
-        default = "No hay olas"
+        default = "Ninguna"
 
         beaches = [
             "Arrieta, Punta, (Viento O Jameos, Viento NW Fariones)",
@@ -160,13 +143,11 @@ class WindguruScraper(object):
         with open("forecast.txt", "a") as f:
             dfAsString = df.to_string(header=True, index=False)
             f.write(dfAsString)
-            
-    def df_to_excel(self, df):
-        excel = ""
-        return excel
+
     def format_hour(self, windguru_df, day):
-        windguru_hour_list = (windguru_df['hour'].loc[windguru_df['day'] == day]).tolist()
-        formated_windguru_hour_list = [element.replace('h', ':00') for element in windguru_hour_list]
+        windguru_hour_list = (
+            windguru_df['hour'].loc[windguru_df['day'] == day]).tolist()
+        formated_windguru_hour_list = [
+            element.replace('h', ':00') for element in windguru_hour_list
+        ]
         return formated_windguru_hour_list
-
-
