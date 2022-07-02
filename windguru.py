@@ -2,6 +2,11 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
 from selenium.webdriver.chrome.options import Options
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 import warnings, os, numpy as np, pandas as pd
 from typing import Dict, List
 
@@ -40,8 +45,8 @@ class WindguruScraper(object):
         self.driver.get(link)
 
         forecast = {}
-        sleep(10)
-        while self.page_is_loaded():
+        WebDriverWait(self.driver, 3).until(EC.presence_of_all_elements_located((By.TAG_NAME, 'td')))
+        if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
 
             table = s.find("table", class_="tabulka")
@@ -65,18 +70,18 @@ class WindguruScraper(object):
                         else:
                             value = cell.get_text()
                         forecast[id].append(value)
-            return forecast
-            self.driver.quit()
+                    self.driver.quit()
+        return forecast
 
 
     def forecast_to_df(self, dict: Dict) -> pd.DataFrame:
         df = pd.DataFrame(dict)
-        df[['day', 'hour']] = df['tabid_0_0_dates'].str.split('.',
+        df[['Dia', 'Hora']] = df['tabid_0_0_dates'].str.split('.',
                                                               1,
                                                               expand=True)
         df = df.drop('tabid_0_0_dates', 1)
         df = df[[
-            "day", "hour", "tabid_0_0_SMER", "tabid_0_0_DIRPW",
+            "Dia", "Hora", "tabid_0_0_SMER", "tabid_0_0_DIRPW",
             "tabid_0_0_PERPW", "tabid_0_0_HTSGW"
         ]]
         return df
@@ -129,7 +134,7 @@ class WindguruScraper(object):
             "Famara papelillo", "San Juan", "Papagayo, Faro, Castillo"
         ]
 
-        df["beach"] = np.select(
+        df["Playa"] = np.select(
             [
                 arrieta_punta_jameos_fariones, caleta_caballo_san_juan,
                 la_santa_izquierda, famara, san_juan, papagayo_pechiguera
@@ -148,7 +153,7 @@ class WindguruScraper(object):
 
     def format_hour(self, windguru_df: pd.DataFrame, day: str) -> List:
         windguru_hour_list = (
-            windguru_df['hour'].loc[windguru_df['day'] == day]).tolist()
+            windguru_df['Hora'].loc[windguru_df['Dia'] == day]).tolist()
         formated_windguru_hour_list = [
             element.replace('h', ':00') for element in windguru_hour_list
         ]
