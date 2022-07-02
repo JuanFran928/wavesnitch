@@ -27,9 +27,7 @@ class TidesScraper(object):
     def scrape(self) -> Dict:
         self.driver.get(link)
         horasDict = {}
-
-        sleep(10)
-        while self.page_is_loaded():
+        if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
             tables = s.find_all("table", class_="table table-bordered")
             horas = []
@@ -52,8 +50,8 @@ class TidesScraper(object):
                         hora.append("None")
             for hora in horas:
                 horasDict[self.get_day_name(horas.index(hora))] = hora
-            return horasDict
             self.driver.quit()
+        return horasDict
 
     def mareas_to_df(self, dict: Dict) -> pd.DataFrame:
         df = pd.DataFrame(dict)

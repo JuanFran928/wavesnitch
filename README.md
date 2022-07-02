@@ -11,8 +11,11 @@ Asure you have selenium and google chrome installed on your linux machine.
 3. ```python -m venv venv```
 4. ```source venv/bin/activate```
 3. ```pip install -r requirements.txt```
-4. ```python main.py```
+4. ```asure you downloaded chromedriver and its on path (executable_path argument of self.driver property, in windguru.py and tides.py)```
+5. ```python main.py```
 
-At the end, it will generate a text (forecast.txt) file, where you can see all the conditions.
+At the end, it will generate a text file (forecast.txt), where you can see all the conditions.
 
 This project is still under construction
+
+If you enjoyed this project, I will be so much pleased if you give me a star.
