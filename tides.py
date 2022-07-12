@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 import os, datetime, pandas as pd
 from typing import Dict, List
+from tqdm import tqdm
 
 link = "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
 
@@ -31,7 +32,7 @@ class TidesScraper(object):
             s = BeautifulSoup(self.driver.page_source, "html.parser")
             tables = s.find_all("table", class_="table table-bordered")
             horas = []
-            for table in tables:
+            for table in tqdm(tables):
                 tablebody = table.find("tbody")
                 rows = tablebody.find_all("tr")
                 hora = []
@@ -65,7 +66,8 @@ class TidesScraper(object):
             f.write(dfAsString)
 
     def get_day_name(self, add: float) -> str:
-        day = datetime.date.today() + datetime.timedelta(days=add)
+        today = datetime.date.today()
+        day = today + datetime.timedelta(days=add)
         day_matches = {
             "Monday": "Mo",
             "Tuesday": "Tu",
