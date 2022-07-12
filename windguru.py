@@ -1,4 +1,5 @@
 from selenium import webdriver
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from time import sleep
 from selenium.webdriver.chrome.options import Options
@@ -7,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-import warnings, os, numpy as np, pandas as pd
+import warnings, os, numpy as np, pandas as pd, webbrowser
 from typing import Dict, List
 
 warnings.filterwarnings("ignore")
@@ -45,7 +46,7 @@ class WindguruScraper(object):
         self.driver.get(link)
 
         forecast = {}
-        WebDriverWait(self.driver, 3).until(EC.presence_of_all_elements_located((By.TAG_NAME, 'td')))
+        WebDriverWait(self.driver, 5).until(EC.presence_of_all_elements_located((By.TAG_NAME, 'td')))
         if self.page_is_loaded():
             s = BeautifulSoup(self.driver.page_source, "html.parser")
 
@@ -53,7 +54,7 @@ class WindguruScraper(object):
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
 
-            for row in rows:
+            for row in tqdm(rows):
                 cells = row.find_all("td")
                 id = row["id"]
                 if id in [
@@ -76,12 +77,12 @@ class WindguruScraper(object):
 
     def forecast_to_df(self, dict: Dict) -> pd.DataFrame:
         df = pd.DataFrame(dict)
-        df[['Dia', 'Hora']] = df['tabid_0_0_dates'].str.split('.',
+        df[['DIA|', 'HORA|']] = df['tabid_0_0_dates'].str.split('.',
                                                               1,
                                                               expand=True)
         df = df.drop('tabid_0_0_dates', 1)
         df = df[[
-            "Dia", "Hora", "tabid_0_0_SMER", "tabid_0_0_DIRPW",
+            "DIA|", "HORA|", "tabid_0_0_SMER", "tabid_0_0_DIRPW",
             "tabid_0_0_PERPW", "tabid_0_0_HTSGW"
         ]]
         return df
@@ -112,7 +113,7 @@ class WindguruScraper(object):
                    (wind_direction.len() == 3))
 
         #STRENGTH
-        STRENGTH = ((strength > 1) & (strength < 2))
+        STRENGTH = ((strength > 1) & (strength < 2.5))
 
         #PERIOD
         PERIOD = (period > 7)
@@ -129,12 +130,12 @@ class WindguruScraper(object):
         default = "Ninguna"
 
         beaches = [
-            "Arrieta, Punta, (Viento O Jameos, Viento NW Fariones)",
+            "Arrieta, Punta, (Viento O Jameos)", #, Viento NW Fariones
             "Caleta Caballo, (Mar N-NW San Juan)", "Izquierda de la Santa",
-            "Famara papelillo", "San Juan", "Papagayo, Faro, Castillo"
+            "Famara Papelillo", "San Juan", "Papagayo, Faro, Castillo"
         ]
 
-        df["Playa"] = np.select(
+        df["PLAYA|"] = np.select(
             [
                 arrieta_punta_jameos_fariones, caleta_caballo_san_juan,
                 la_santa_izquierda, famara, san_juan, papagayo_pechiguera
@@ -150,10 +151,12 @@ class WindguruScraper(object):
         with open("forecast.txt", "a") as f:
             dfAsString = df.to_string(header=True, index=False)
             f.write(dfAsString)
+        if os.path.exists("forecast.txt"):
+            os.system("explorer.exe forecast.txt")
 
     def format_hour(self, windguru_df: pd.DataFrame, day: str) -> List:
         windguru_hour_list = (
-            windguru_df['Hora'].loc[windguru_df['Dia'] == day]).tolist()
+            windguru_df['HORA|'].loc[windguru_df['DIA|'] == day]).tolist()
         formated_windguru_hour_list = [
             element.replace('h', ':00') for element in windguru_hour_list
         ]
